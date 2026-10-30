@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Wangi Panel - Mobile Legends</title>
+    <!-- FontAwesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0b0e14;
+            color: #ffffff;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        /* EFEK LATAR BELAKANG BINTANG ESTETIK */
+        .stars-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background: radial-gradient(ellipse at bottom, #1b2737 0%, #090a0f 100%);
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 6px #ffd700; }
+        }
+
+        /* SPLASH SCREEN AWAL (Sebelum Login) */
+        .splash-screen-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #0b0e14;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .splash-screen-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .splash-content {
+            text-align: center;
+            width: 85%;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .splash-logo-icon {
+            font-size: 52px;
+            color: #ffd700;
+            margin-bottom: 4px;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+        }
+
+        .splash-title-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            letter-spacing: 1.5px;
+        }
+
+        .splash-subtitle-text {
+            font-size: 14px;
+            color: #ffd700;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .splash-line-progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: #1a1f2b;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #282e3d;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .splash-line-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ffffff, #ffd700);
+            border-radius: 4px;
+            transition: width 0.1s linear;
+        }
+
+        .splash-percentage {
+            font-size: 11px;
+            color: #ffd700;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* PERIZINAN SYSTEM OVERLAY (Sebelum Masuk Panel/MLBB) */
+        .permission-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(11, 14, 20, 0.96);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9900;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease;
+        }
+
+        .permission-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .permission-card {
+            width: 90%;
+            max-width: 380px;
+            background: linear-gradient(135deg, #12151c, #1a1f2b);
+            border: 1.5px solid #ffd700;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.9), 0 0 20px rgba(255,215,0,0.2);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .permission-icon {
+            font-size: 42px;
+            color: #ffd700;
+            margin-bottom: 12px;
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255,215,0,0.5)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(255,215,0,0.8)); }
+        }
+
+        .permission-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .permission-desc {
+            font-size: 12px;
+            color: #b0bec5;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .permission-item-box {
+            background: #181c25;
+            border: 1px solid #282e3d;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+        }
+
+        .permission-item-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .permission-item-left i {
+            font-size: 18px;
+            color: #69f0ae;
+        }
+
+        .permission-item-text .p-t {
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .permission-item-text .p-s {
+            font-size: 10px;
+            color: #8b92a5;
+        }
+
+        .btn-grant-permission {
+            background: linear-gradient(135deg, #ffd700, #ffa000);
+            color: #0b0e14;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .btn-grant-permission:hover {
+            transform: scale(1.02);
+        }
+
+        /* HALAMAN LOGIN MASUK */
+        .login-overlay-page {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #0b0e14;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9800;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+
+        .login-overlay-page.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .login-card {
+            width: 90%;
+            max-width: 380px;
+            background: linear-gradient(135deg, #12151c, #181c25);
+            border-radius: 18px;
+            border: 1.5px solid #2f364d;
+            padding: 28px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 25px rgba(255, 215, 0, 0.15);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-logo {
+            font-size: 42px;
+            color: #ffd700;
+            margin-bottom: 12px;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+
+        .login-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .login-subtitle {
+            font-size: 12px;
+            color: #8b92a5;
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 14px;
+        }
+
+        .input-group label {
+            font-size: 10px;
+            color: #ffd700;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            background-color: #181c25;
+            border: 1px solid #282e3d;
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-login-submit {
+            background: linear-gradient(135deg, #ffd700, #ffa000);
+            color: #0b0e14;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            transition: opacity 0.2s;
+        }
+
+        .btn-login-submit:hover {
+            opacity: 0.9;
+        }
+
+        .login-error {
+            color: #ff5252;
+            font-size: 12px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        /* Container utama full layar */
+        .mod-panel {
+            width: 100vw;
+            height: 100vh;
+            background-color: #0b0e14;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Header Putih Clean dengan Bintang Estetik */
+        .panel-top-header {
+            background: linear-gradient(135deg, #ffffff, #cfd8dc);
+            color: #0b0e14;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            color: #0b0e14;
+        }
+
+        .brand-title i {
+            font-size: 18px;
+            color: #d4af37;
+        }
+
+        .header-right-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .version-badge {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #0b0e14;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+        }
+
+        .three-dots-btn {
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+            color: #0b0e14;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .three-dots-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .dropdown-menu-dots {
+            position: absolute;
+            top: 55px;
+            right: 15px;
+            background-color: #181c25;
+            border: 1px solid #363d52;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            width: 180px;
+            display: none;
+            z-index: 500;
+            overflow: hidden;
+        }
+
+        .dropdown-menu-dots.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #232836;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: #232836;
+            color: #ffffff;
+        }
+
+        /* TABEL KOTAK INFO RINGKAS DI ATAS */
+        .summary-dashboard-card {
+            background: #181c25;
+            border-bottom: 1px solid #232836;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .summary-left-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .summary-title-main {
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .summary-sub-desc {
+            font-size: 10px;
+            color: #8b92a5;
+        }
+
+        .summary-right-badge {
+            background: rgba(46, 125, 50, 0.2);
+            border: 1px solid #2e7d32;
+            color: #81c784;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .game-subtitle {
+            background-color: #0d0f14;
+            padding: 8px 20px;
+            font-size: 11px;
+            color: #8b92a5;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #1a1f2b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            gap: 8px;
+        }
+
+        .action-buttons-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-all-feature {
+            background-color: #ffd700;
+            color: #0b0e14;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            box-shadow: 0 2px 8px rgba(255,215,0,0.3);
+        }
+
+        .btn-all-feature:hover {
+            opacity: 0.9;
+        }
+
+        .btn-off-feature {
+            background-color: #2b3243;
+            color: #ffffff;
+            border: 1px solid #363d52;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-off-feature:hover {
+            background-color: #363d52;
+        }
+
+        .category-tabs {
+            display: flex;
+            background-color: #0d0f14;
+            padding: 8px 16px;
+            gap: 6px;
+            overflow-x: auto;
+            border-bottom: 1px solid #1a1f2b;
+            flex-shrink: 0;
+        }
+
+        .tab-chip {
+            background-color: #1a1f2b;
+            border: none;
+            color: #8b92a5;
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            font-weight: 500;
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab-chip.active {
+            background-color: #ffd700;
+            color: #0b0e14;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255,215,0,0.3);
+        }
+
+        .view-section {
+            display: none;
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+            background-color: #12151c;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .view-section::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .view-section::-webkit-scrollbar-thumb {
+            background: #232836;
+            border-radius: 4px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            color: #ffd700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding-left: 4px;
+            margin-top: 12px;
+        }
+
+        .section-label:first-child {
+            margin-top: 0;
+        }
+
+        .feature-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #181c25;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #1f2533;
+            transition: border 0.2s;
+        }
+
+        .feature-row:hover {
+            border-color: #2f364d;
+        }
+
+        .feature-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .feature-icon-box {
+            width: 34px;
+            height: 34px;
+            background-color: #12151c;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffd700;
+            font-size: 14px;
+            border: 1px solid #282e3d;
+        }
+
+        .feature-desc .f-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f1f3f5;
+        }
+
+        .feature-desc .f-subtitle {
+            font-size: 11px;
+            color: #8b92a5;
+        }
+
+        .accordion-card {
+            background-color: #181c25;
+            border: 1px solid #232836;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background-color: #181c25;
+            transition: background 0.2s;
+        }
+
+        .accordion-header:hover {
+            background-color: #1f2533;
+        }
+
+        .accordion-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .accordion-icon {
+            width: 36px;
+            height: 36px;
+            background-color: #12151c;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffd700;
+            font-size: 16px;
+            border: 1px solid #282e3d;
+        }
+
+        .accordion-text .acc-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .accordion-text .acc-sub {
+            font-size: 11px;
+            color: #8b92a5;
+        }
+
+        .accordion-arrow {
+            font-size: 12px;
+            color: #8b92a5;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-card.open .accordion-arrow {
+            transform: rotate(180deg);
+        }
+
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease-out, padding 0.35s ease-out;
+            background-color: #12151c;
+            padding: 0 16px;
+            border-top: 1px solid transparent;
+        }
+
+        .accordion-card.open .accordion-body {
+            max-height: 800px;
+            padding: 14px 16px;
+            border-top: 1px solid #232836;
+            overflow-y: auto;
+        }
+
+       
